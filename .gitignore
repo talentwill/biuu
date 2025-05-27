@@ -32,3 +32,6 @@ node_modules/
 *.mp4
 public/Logo2.png
 BIUU.html
+
+*.ts 
+*.m3u8

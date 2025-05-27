@@ -111,11 +111,10 @@
 
     <!-- 延迟加载Tailwind和Font Awesome -->
     <link rel="preload" href="https://cdn.tailwindcss.com" as="script" />
-    <link
-      rel="preload"
-      href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"
-      as="style"
-    />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" as="style" />
+    
+    <!-- 添加HLS.js库支持 -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
     <!-- 加载指示器 -->
     <div class="loading-indicator active" id="page-loader"></div>
@@ -959,10 +958,10 @@
             playsinline
             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             poster="/public/Logo.jpg"
-            data-src="/public/video2.mp4"
+            data-src="/public/output.m3u8"
             id="video2"
           >
-            <source data-src="/public/video2.mp4" type="video/mp4" />
+            <source data-src="/public/output.m3u8" type="application/x-mpegURL" />
             您的浏览器不支持视频标签
           </video>
           <div class="video-overlay p-6">
@@ -1205,23 +1204,69 @@
             const videos = document.querySelectorAll("video[data-src]");
             videos.forEach(function (video) {
               const source = video.querySelector("source");
-              if (source) {
-                source.src = source.getAttribute("data-src");
-              }
-              video.src = video.getAttribute("data-src");
-              video.load();
-              // 只有在视频可见时才播放
-              const observer = new IntersectionObserver(function (entries) {
-                entries.forEach(function (entry) {
-                  if (entry.isIntersecting) {
-                    video.play();
-                    video.setAttribute("autoplay", "");
-                    video.setAttribute("loop", "");
-                    observer.unobserve(video);
-                  }
+              const videoSrc = video.getAttribute("data-src");
+              
+              // 检查是否是HLS流媒体(.m3u8)
+              if (videoSrc.endsWith('.m3u8')) {
+                // 使用HLS.js播放m3u8
+                if (Hls.isSupported()) {
+                  const hls = new Hls();
+                  hls.loadSource(videoSrc);
+                  hls.attachMedia(video);
+                  hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    // 只有在视频可见时才播放
+                    const observer = new IntersectionObserver(function (entries) {
+                      entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                          video.play();
+                          video.setAttribute("autoplay", "");
+                          video.setAttribute("loop", "");
+                          observer.unobserve(video);
+                        }
+                      });
+                    });
+                    observer.observe(video);
+                  });
+                }
+                // 对于原生支持HLS的浏览器（如Safari）
+                else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                  video.src = videoSrc;
+                  video.addEventListener('loadedmetadata', function() {
+                    // 只有在视频可见时才播放
+                    const observer = new IntersectionObserver(function (entries) {
+                      entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                          video.play();
+                          video.setAttribute("autoplay", "");
+                          video.setAttribute("loop", "");
+                          observer.unobserve(video);
+                        }
+                      });
+                    });
+                    observer.observe(video);
+                  });
+                }
+              } else {
+                // 普通视频处理
+                if (source) {
+                  source.src = source.getAttribute("data-src");
+                }
+                video.src = videoSrc;
+                video.load();
+                // 只有在视频可见时才播放
+                const observer = new IntersectionObserver(function (entries) {
+                  entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                      video.play();
+                      video.setAttribute("autoplay", "");
+                      video.setAttribute("loop", "");
+                      observer.unobserve(video);
+                    }
+                  });
                 });
-              });
-              observer.observe(video);
+                observer.observe(video);
+              }
+            });
             });
           }, 1000);
         }, 500);
@@ -1277,7 +1322,6 @@
             header.classList.remove("backdrop-blur-sm");
           }
         });
-      });
     </script>
   </body>
 </html>
