@@ -60,3 +60,16 @@ systemctl restart nginx
 - 确保视频文件格式正确且可以正常播放
 - 注意调整 nginx.conf 中的缓存配置以优化性能
 - 在生产环境中，建议使用 HTTPS 并相应调整 Nginx 配置
+
+
+
+server {
+    listen 80;
+    server_name localhost;  # 或者使用您的域名
+    root /root/www/biuu;  # 项目路径
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
