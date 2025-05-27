@@ -30,3 +30,5 @@ node_modules/
 .env.*.local
 
 *.mp4
+public/Logo2.png
+BIUU.html

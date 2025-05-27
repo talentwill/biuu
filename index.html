@@ -27,8 +27,9 @@
       @keyframes loading { 0% { transform: translateX(-100%); } 50% { transform: translateX(-10%); } 100% { transform: translateX(0); } }
       
       /* 视频容器样式 */
-      .video-container { opacity: 0; transition: opacity 0.5s ease-in-out; }
+      .video-container { opacity: 0; transition: opacity 0.5s ease-in-out, transform 0.3s ease-in-out; }
       .video-container.loaded { opacity: 1; }
+      .video-container.menu-active { transform: translateY(150px); } /* 菜单展开时视频下移 */
     </style>
     
     <!-- 延迟加载Tailwind和Font Awesome -->
@@ -235,15 +236,15 @@
                 ></i>
               </a>
               <div
-                class="absolute left-0 mt-2 w-96 rounded-lg shadow-lg bg-primary opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 dropdown-shadow transform origin-top-left group-hover:translate-y-0 translate-y-2"
+                class="absolute left-0 mt-2 w-96 rounded-lg shadow-lg bg-white opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 dropdown-shadow transform origin-top-left group-hover:translate-y-0 translate-y-2"
               >
                 <div class="p-1">
                   <p class="italic text-gray-400 mb-2 text-left m-4">Loading</p>
                   <br />
                   <img
-                    src="/public/Logo.jpg"
+                    src="/public/LogoM.jpg"
                     alt="Logo"
-                    class="w-full h-30 object-cover rounded-md"
+                    class="w-48 h-24 object-cover rounded-md"
                   />
                 </div>
               </div>
@@ -268,7 +269,7 @@
                   <img
                     src="/public/LogoM.jpg"
                     alt="Logo"
-                    class="w-full h-30 object-cover rounded-md"
+                    class="w-48 h-24 object-cover rounded-md"
                   />
                 </div>
               </div>
@@ -291,9 +292,9 @@
                   <p class="italic text-gray-400 mb-2 text-left m-4">Loading</p>
                   <br />
                   <img
-                    src="/public/Logo.jpg"
+                    src="/public/LogoM.jpg"
                     alt="Logo"
-                    class="w-full h-30 object-cover rounded-md"
+                    class="w-48 h-24 object-cover rounded-md"
                   />
                 </div>
               </div>
@@ -316,9 +317,9 @@
                   <p class="italic text-gray-400 mb-2 text-left m-4">Loading</p>
                   <br />
                   <img
-                    src="/public/Logo.jpg"
+                    src="/public/LogoM.jpg"
                     alt="Logo"
-                    class="w-full h-30 object-cover rounded-md"
+                    class="w-48 h-24 object-cover rounded-md"
                   />
                 </div>
               </div>
@@ -341,9 +342,9 @@
                   <p class="italic text-gray-400 mb-2 text-left m-4">Loading</p>
                   <br />
                   <img
-                    src="/public/Logo.jpg"
+                    src="/public/LogoM.jpg"
                     alt="Logo"
-                    class="w-full h-30 object-cover rounded-md"
+                    class="w-48 h-24 object-cover rounded-md"
                   />
                 </div>
               </div>
@@ -366,9 +367,9 @@
                   <p class="italic text-gray-400 mb-2 text-left m-4">Loading</p>
                   <br />
                   <img
-                    src="/public/Logo.jpg"
+                    src="/public/LogoM.jpg"
                     alt="Logo"
-                    class="w-full h-30 object-cover rounded-md"
+                    class="w-48 h-24 object-cover rounded-md"
                   />
                 </div>
               </div>
@@ -416,7 +417,7 @@
                   <img
                     src="/public/LogoM.jpg"
                     alt="Logo"
-                    class="w-full h-30 object-cover rounded-md"
+                    class="w-36 h-16 object-cover rounded-md"
                   />
                 </a>
               </div>
@@ -436,9 +437,9 @@
                 <a href="#" class="block">
                   <p class="italic text-gray-400 mb-2 text-center">Loading</p>
                   <img
-                    src="/public/Logo.jpg"
+                    src="/public/LogoM.jpg"
                     alt="Logo"
-                    class="w-full h-30 object-cover rounded-md"
+                    class="w-36 h-16 object-cover rounded-md"
                   />
                 </a>
               </div>
@@ -458,9 +459,9 @@
                 <a href="#" class="block">
                   <p class="italic text-gray-400 mb-2 text-center">Loading</p>
                   <img
-                    src="/public/Logo.jpg"
+                    src="/public/LogoM.jpg"
                     alt="Logo"
-                    class="w-full h-30 object-cover rounded-md"
+                    class="w-36 h-16 object-cover rounded-md"
                   />
                 </a>
               </div>
@@ -480,9 +481,9 @@
                 <a href="#" class="block">
                   <p class="italic text-gray-400 mb-2 text-center">Loading</p>
                   <img
-                    src="/public/Logo.jpg"
+                    src="/public/LogoM.jpg"
                     alt="Logo"
-                    class="w-full h-30 object-cover rounded-md"
+                    class="w-36 h-16 object-cover rounded-md"
                   />
                 </a>
               </div>
@@ -502,9 +503,9 @@
                 <a href="#" class="block">
                   <p class="italic text-gray-400 mb-2 text-center">Loading</p>
                   <img
-                    src="/public/Logo.jpg"
+                    src="/public/LogoM.jpg"
                     alt="Logo"
-                    class="w-full h-30 object-cover rounded-md"
+                    class="w-36 h-16 object-cover rounded-md"
                   />
                 </a>
               </div>
@@ -786,6 +787,23 @@
             document.getElementById('page-loader').style.opacity = '0';
           }, 500);
         }, 300);
+        
+        // 监听所有菜单按钮的事件，使视频容器下移
+        const videoContainer = document.getElementById('video-container');
+        
+        // 2. 为桌面版菜单添加事件监听
+        const desktopMenuGroups = document.querySelectorAll('nav .group');
+        desktopMenuGroups.forEach(function(group) {
+          // 鼠标进入菜单组时，添加menu-active类
+          group.addEventListener('mouseenter', function() {
+            videoContainer.classList.add('menu-active');
+          });
+          
+          // 鼠标离开菜单组时，移除menu-active类
+          group.addEventListener('mouseleave', function() {
+            videoContainer.classList.remove('menu-active');
+          });
+        });
         
         // 延迟加载外部资源
         setTimeout(function() {
