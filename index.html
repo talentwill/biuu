@@ -932,7 +932,7 @@
               muted
               playsinline
               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              poster="/public/Logo.jpg"
+              poster="/public/video1_cover.png"
               data-src="/public/video1.mp4"
               id="video1"
             >
@@ -947,6 +947,10 @@
               </h3>
               <p class="text-gray-200"></p>
             </div>
+            <button class="sound-toggle absolute bottom-4 right-4 bg-white bg-opacity-30 hover:bg-opacity-50 rounded-full p-2 transition-all duration-300" data-video-id="video1" title="开启声音">
+              <img class="mute-icon" src="/public/mute-icon.svg" width="24" height="24" alt="静音图标">
+              <img class="unmute-icon hidden" src="/public/unmute-icon.svg" width="24" height="24" alt="有声图标">
+            </button>
           </div>
         </div>
 
@@ -957,11 +961,11 @@
             muted
             playsinline
             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            poster="/public/Logo.jpg"
-            data-src="/public/output.m3u8"
+            poster="/public/video2_cover.png"
+            data-src="https://biuu2025.oss-cn-hangzhou.aliyuncs.com/html/a/public/video2.m3u8"
             id="video2"
           >
-            <source data-src="/public/output.m3u8" type="application/x-mpegURL" />
+            <source data-src="https://biuu2025.oss-cn-hangzhou.aliyuncs.com/html/a/public/video2.m3u8" type="application/x-mpegURL" />
             您的浏览器不支持视频标签
           </video>
           <div class="video-overlay p-6">
@@ -971,6 +975,10 @@
               </h3>
               <p class="text-gray-200"></p>
             </div>
+            <button class="sound-toggle absolute bottom-4 right-4 bg-white bg-opacity-30 hover:bg-opacity-50 rounded-full p-2 transition-all duration-300" data-video-id="video2" title="开启声音">
+              <img class="mute-icon" src="/public/mute-icon.svg" width="24" height="24" alt="静音图标">
+              <img class="unmute-icon hidden" src="/public/unmute-icon.svg" width="24" height="24" alt="有声图标">
+            </button>
           </div>
         </div>
       </div>
@@ -1299,7 +1307,7 @@
                 }
               });
 
-              // 切换当前下拉菜单
+                // 切换当前下拉菜单
               dropdown.classList.toggle("hidden");
               icon.style.transform = dropdown.classList.contains("hidden")
                 ? "rotate(0deg)"
@@ -1321,6 +1329,34 @@
             header.classList.add("bg-white");
             header.classList.remove("backdrop-blur-sm");
           }
+        });
+        
+        // 声音控制按钮功能
+        document.querySelectorAll('.sound-toggle').forEach(button => {
+          button.addEventListener('click', function(e) {
+            e.stopPropagation(); // 防止事件冒泡
+            
+            const videoId = this.getAttribute('data-video-id');
+            const video = document.getElementById(videoId);
+            const muteIcon = this.querySelector('.mute-icon');
+            const unmuteIcon = this.querySelector('.unmute-icon');
+            
+            if (video) {
+              // 切换视频的静音状态
+              video.muted = !video.muted;
+              
+              // 更新图标
+              if (video.muted) {
+                muteIcon.classList.remove('hidden');
+                unmuteIcon.classList.add('hidden');
+                this.setAttribute('title', '开启声音');
+              } else {
+                muteIcon.classList.add('hidden');
+                unmuteIcon.classList.remove('hidden');
+                this.setAttribute('title', '关闭声音');
+              }
+            }
+          });
         });
     </script>
   </body>
