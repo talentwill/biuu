@@ -73,3 +73,7 @@ server {
         try_files $uri $uri/ /index.html;
     }
 }
+
+## Notes
+https://www.loewe.com/int/en/home
+https://www.cufonfonts.com/font/andale-mono
