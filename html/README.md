@@ -77,3 +77,5 @@ server {
 ## Notes
 https://www.loewe.com/int/en/home
 https://www.cufonfonts.com/font/andale-mono
+favicon
+https://icon-icons.com/zh/%E5%9B%BE%E6%A0%87/%E5%BE%AA%E7%8E%AF-%E6%97%A0%E9%99%90/149437

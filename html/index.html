@@ -7,7 +7,7 @@
   <title>BIUU</title>
 
   <!-- Favicon link -->
-  <link rel="icon" href="public/favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="public/favicon3.ico" type="image/x-icon" />
   
   <!-- CSS files -->
   <link rel="stylesheet" href="public/styles.css">
@@ -280,10 +280,18 @@
         <!-- Video container -->
         <div class="absolute inset-0 bg-black">
           <!-- Use poster attribute to display placeholder image -->
-          <video muted playsinline loop autoplay preload="metadata"
+          <video muted playsinline loop preload="none" webkit-playsinline="true" x-webkit-airplay="allow"
             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            poster="/public/video1_cover.png" data-src="https://lingxiniu.top/video1/video1.m3u8" id="video1">
+            poster="/public/video1_cover.png" data-src="https://lingxiniu.top/video1/video1.m3u8" id="video1"
+            style="object-fit: cover;" crossorigin="anonymous">
             <source data-src="https://lingxiniu.top/video1/video1.m3u8" type="application/x-mpegURL" />
+            <div class="video-play-overlay absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 cursor-pointer" style="display: none;">
+              <div class="play-button bg-white bg-opacity-80 rounded-full p-4">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M8 5v14l11-7z" fill="currentColor"/>
+                </svg>
+              </div>
+            </div>
             Your browser does not support the video tag
           </video>
         </div>
@@ -304,10 +312,18 @@
       </div>
 
       <div class="rounded-xl overflow-hidden shadow-xl group relative aspect-video">
-        <video muted playsinline loop autoplay preload="metadata"
+        <video muted playsinline loop preload="none" webkit-playsinline="true" x-webkit-airplay="allow"
           class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-          poster="/public/video2_cover.png" data-src="https://lingxiniu.top/video2/video2.m3u8" id="video2">
+          poster="/public/video2_cover.png" data-src="https://lingxiniu.top/video2/video2.m3u8" id="video2"
+          style="object-fit: cover;" crossorigin="anonymous">
           <source data-src="https://lingxiniu.top/video2/video2.m3u8" type="application/x-mpegURL" />
+          <div class="video-play-overlay absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 cursor-pointer" style="display: none;">
+            <div class="play-button bg-white bg-opacity-80 rounded-full p-4">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M8 5v14l11-7z" fill="currentColor"/>
+              </svg>
+            </div>
+          </div>
           Your browser does not support the video tag
         </video>
         <div class="video-overlay p-6">
@@ -444,6 +460,33 @@
         }, 500);
       }, 300);
 
+      // Mobile video interaction handler
+      let globalUserInteracted = false;
+      const handleGlobalInteraction = () => {
+        if (!globalUserInteracted && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+          globalUserInteracted = true;
+          // Hide all play overlays and try to play videos
+          const overlays = document.querySelectorAll('.video-play-overlay');
+          overlays.forEach(overlay => {
+            overlay.style.display = 'none';
+          });
+          
+          const videos = document.querySelectorAll('video');
+          videos.forEach(video => {
+            if (video.readyState >= 2) {
+              video.play().catch(e => console.log('Global video play failed:', e));
+            }
+          });
+        }
+      };
+      
+      // Listen for any user interaction on mobile
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        ['touchstart', 'click'].forEach(event => {
+          document.addEventListener(event, handleGlobalInteraction, { once: true });
+        });
+      }
+
       // Listen to all menu button events to move video container down
       const videoContainer = document.getElementById("video-container");
 
@@ -466,31 +509,93 @@
         const videoContainer = document.getElementById("video-container");
         videoContainer.classList.add("loaded");
 
+        // Mobile/iPhone video play detection
+        let userHasInteracted = false;
+        let videosLoaded = [];
+        
+        // Detect if device is mobile
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        
+        // Function to show play overlay for mobile devices
+        function showPlayOverlay(video) {
+          const overlay = video.parentElement.querySelector('.video-play-overlay');
+          if (overlay && isMobile) {
+            overlay.style.display = 'flex';
+            overlay.addEventListener('click', function() {
+              video.play().then(() => {
+                overlay.style.display = 'none';
+                userHasInteracted = true;
+                // Try to play other videos
+                videosLoaded.forEach(v => {
+                  if (v !== video && v.readyState >= 2) {
+                    v.play().catch(e => console.log('Secondary video play failed:', e));
+                  }
+                });
+              }).catch(e => {
+                console.log('Video play failed:', e);
+              });
+            });
+          }
+        }
+        
+        // Function to attempt video play with mobile compatibility
+        function attemptVideoPlay(video) {
+          if (isMobile && !userHasInteracted) {
+            // For mobile devices, show play overlay instead of auto-playing
+            showPlayOverlay(video);
+            return;
+          }
+          
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.then(() => {
+              // Autoplay started successfully
+              userHasInteracted = true;
+              const overlay = video.parentElement.querySelector('.video-play-overlay');
+              if (overlay) overlay.style.display = 'none';
+            }).catch(error => {
+              // Autoplay was prevented
+              console.log('Autoplay prevented:', error);
+              showPlayOverlay(video);
+            });
+          }
+        }
+
         // Load videos
         const videos = document.querySelectorAll("video[data-src]");
         videos.forEach(function (video) {
           const source = video.querySelector("source");
           const videoSrc = video.getAttribute("data-src");
+          
+          // Add video to loaded array
+          videosLoaded.push(video);
 
           // Check if it's an HLS stream (.m3u8)
           if (videoSrc.endsWith('.m3u8')) {
             // Use HLS.js to play m3u8
             if (Hls.isSupported()) {
-              const hls = new Hls();
+              const hls = new Hls({
+                enableWorker: false,
+                lowLatencyMode: true,
+                backBufferLength: 90
+              });
               hls.loadSource(videoSrc);
               hls.attachMedia(video);
               hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                // For mobile devices, show overlay immediately
+                if (isMobile) {
+                  showPlayOverlay(video);
+                }
                 // Only play when video is visible
                 const observer = new IntersectionObserver(function (entries) {
                   entries.forEach(function (entry) {
                     if (entry.isIntersecting) {
-                      video.play();
-                      video.setAttribute("autoplay", "");
-                      video.setAttribute("loop", "");
+                      attemptVideoPlay(video);
                       observer.unobserve(video);
                     }
                   });
-                });
+                }, { threshold: 0.3 });
                 observer.observe(video);
               });
             }
@@ -498,16 +603,19 @@
             else if (video.canPlayType('application/vnd.apple.mpegurl')) {
               video.src = videoSrc;
               video.addEventListener('loadedmetadata', function () {
+                // For mobile devices, show overlay immediately
+                if (isMobile) {
+                  showPlayOverlay(video);
+                }
                 // Only play when video is visible
                 const observer = new IntersectionObserver(function (entries) {
                   entries.forEach(function (entry) {
                     if (entry.isIntersecting) {
-                      video.play();
-                      video.setAttribute("autoplay", "");
-                      video.setAttribute("loop", "");
+                      attemptVideoPlay(video);
+                      observer.unobserve(video);
                     }
                   });
-                });
+                }, { threshold: 0.3 });
                 observer.observe(video);
               });
             }
@@ -518,16 +626,23 @@
             }
             video.src = videoSrc;
             video.load();
+            
+            video.addEventListener('loadedmetadata', function () {
+              // For mobile devices, show overlay immediately
+              if (isMobile) {
+                showPlayOverlay(video);
+              }
+            });
+            
             // Only play when video is visible
             const observer = new IntersectionObserver(function (entries) {
               entries.forEach(function (entry) {
                 if (entry.isIntersecting) {
-                  video.play();
-                  video.setAttribute("autoplay", "");
-                  video.setAttribute("loop", "");
+                  attemptVideoPlay(video);
+                  observer.unobserve(video);
                 }
               });
-            });
+            }, { threshold: 0.3 });
             observer.observe(video);
           }
         });
